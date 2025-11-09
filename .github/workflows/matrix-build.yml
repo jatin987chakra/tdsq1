@@ -2,43 +2,35 @@ name: Matrix Build with Artifacts
 
 on:
   push:
-    branches: [ main, master ]
-  pull_request:
+    branches: [ main ]
 
 jobs:
   build:
-    name: build (${{ matrix.os }}, node ${{ matrix.node }})
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     strategy:
-      fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        node: [16, 18, 20]
-
+        node: [16, 18, 20]  # 3 variants
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: matrix-c912048
-        run: echo "Matrix variant: OS=${{ matrix.os }} NODE=${{ matrix.node }}"
+        run: echo "Building for Node ${{ matrix.node }}"
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
 
-      - name: Build dummy output
+      - name: Generate artifact file
         run: |
-          node -v
-          echo "Building on ${{ matrix.os }} with Node ${{ matrix.node }}..."
           mkdir -p dist
-          echo "Build output for OS=${{ matrix.os }} Node=${{ matrix.node }} at $(date)" > dist/output-${{ matrix.os }}-node${{ matrix.node }}.txt
-          echo "Repository: $GITHUB_REPOSITORY" >> dist/output-${{ matrix.os }}-node${{ matrix.node }}.txt
-          echo "Run ID: $GITHUB_RUN_ID" >> dist/output-${{ matrix.os }}-node${{ matrix.node }}.txt
+          echo "Build for Node ${{ matrix.node }}" > dist/output-${{ matrix.node }}.txt
+          echo "Date: $(date)" >> dist/output-${{ matrix.node }}.txt
+          echo "Repository: $GITHUB_REPOSITORY" >> dist/output-${{ matrix.node }}.txt
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: build-c912048-${{ matrix.os }}-node${{ matrix.node }}
-          path: dist/output-${{ matrix.os }}-node${{ matrix.node }}.txt
-          if-no-files-found: error
+          name: build-c912048-node${{ matrix.node }}
+          path: dist/output-${{ matrix.node }}.txt
